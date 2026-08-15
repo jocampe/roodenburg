@@ -1,0 +1,90 @@
+services:
+  web:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://roodenburg:roodenburg@postgres:5432/roodenburg
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  football-sync:
+    profiles: ["jobs"]
+    build:
+      context: .
+      target: jobs
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://roodenburg:roodenburg@postgres:5432/roodenburg
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  contact-retention:
+    profiles: ["jobs"]
+    build:
+      context: .
+      target: jobs
+    command: ["npm", "run", "retention:purge"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://roodenburg:roodenburg@postgres:5432/roodenburg
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  database-backup:
+    profiles: ["operations"]
+    image: postgres:17-alpine
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://roodenburg:roodenburg@postgres:5432/roodenburg
+      BACKUP_DIR: /backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backups:/backups
+      - ./scripts:/operations:ro
+    entrypoint: ["/bin/sh", "/operations/backup-postgres.sh"]
+    restart: "no"
+
+  database-restore:
+    profiles: ["restore"]
+    image: postgres:17-alpine
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://roodenburg:roodenburg@postgres:5432/roodenburg
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backups:/backups:ro
+      - ./scripts:/operations:ro
+    entrypoint: ["/bin/sh", "/operations/restore-postgres.sh"]
+    restart: "no"
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: roodenburg
+      POSTGRES_USER: roodenburg
+      POSTGRES_PASSWORD: roodenburg
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U roodenburg -d roodenburg"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

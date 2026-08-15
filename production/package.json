@@ -1,0 +1,52 @@
+{
+  "name": "@lv-roodenburg/website",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build --experimental-build-mode compile",
+    "start": "next start",
+    "lint": "eslint .",
+    "payload": "cross-env PAYLOAD_CONFIG_PATH=./src/payload.config.ts payload",
+    "generate:importmap": "npm run payload -- generate:importmap",
+    "generate:types": "npm run payload -- generate:types",
+    "migration:create": "npm run payload -- migrate:create",
+    "migrate": "npm run payload -- migrate",
+    "migrate:status": "npm run payload -- migrate:status",
+    "seed": "cross-env PAYLOAD_CONFIG_PATH=./src/payload.config.ts node --import tsx ./src/scripts/seed.ts",
+    "verify:access": "node --import tsx ./src/scripts/verify-access.ts",
+    "verify:infrastructure": "node --import tsx ./src/scripts/verify-infrastructure.ts",
+    "verify:launch": "node --import tsx ./src/scripts/verify-launch.ts",
+    "verify:public-api": "node --import tsx ./src/scripts/verify-public-api.ts",
+    "verify:football": "node --import tsx ./src/scripts/verify-football.ts",
+    "sync:football": "cross-env PAYLOAD_CONFIG_PATH=./src/payload.config.ts node --import tsx ./src/scripts/sync-football.ts",
+    "retention:purge": "cross-env PAYLOAD_CONFIG_PATH=./src/payload.config.ts node --import tsx ./src/scripts/purge-contact-retention.ts"
+  },
+  "dependencies": {
+    "@payloadcms/db-postgres": "3.88.0",
+    "@payloadcms/email-nodemailer": "3.88.0",
+    "@payloadcms/next": "3.88.0",
+    "@payloadcms/richtext-lexical": "3.88.0",
+    "@payloadcms/storage-s3": "3.88.0",
+    "cross-env": "7.0.3",
+    "graphql": "16.11.0",
+    "next": "16.3.0",
+    "payload": "3.88.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "sharp": "0.34.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.3.0",
+    "tsx": "4.22.4",
+    "typescript": "5.9.3"
+  }
+}
